@@ -1,3 +1,3 @@
-module inkafarma/devops_tools/jio
+module github.com/culturadevops/jgt/jio
 
 go 1.14
