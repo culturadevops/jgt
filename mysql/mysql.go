@@ -1,9 +1,10 @@
 package mysql
 
 import (
-	"inkafarma/devops_tools/exe"
-	"inkafarma/devops_tools/jio"
 	"os/exec"
+
+	"github.com/culturadevops/jgt/exe"
+	"github.com/culturadevops/jgt/jio"
 )
 
 type Jmysql struct {

@@ -1,9 +1,10 @@
 package jgit
 
 import (
-	"inkafarma/devops_tools/exe"
 	"os/exec"
 	"path/filepath"
+
+	"github.com/culturadevops/jgt/exe"
 )
 
 type Jgit struct {
