@@ -1,4 +1,4 @@
-module github/culturadevops1/jgt/mysql
+module github/culturadevops/jgt/mysql
 
 go 1.15
 
