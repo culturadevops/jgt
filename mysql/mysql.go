@@ -14,6 +14,15 @@ type Jmysql struct {
 	Squema string
 }
 
+func SetVar(Dns string,Root string,Passs string, Squema string) Jmysql {
+	return Jmysql{
+		Dns:    "uatcupomania.c4rjguxjh6uc.us-east-1.rds.amazonaws.com",
+		Root:   "root",
+		Pass:   "xOGDOwsMsAN8mLTUSTLjic7I",
+		Squema: "uatcupomania",
+	}
+}
+
 func (j *Jmysql) Command(arg ...string) *exec.Cmd {
 	arg = append([]string{"-u", j.Root, "-p" + j.Pass, "-h", j.Dns}, arg...)
 	cmd := exec.Command("mysql", arg...)
