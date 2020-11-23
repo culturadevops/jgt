@@ -14,12 +14,12 @@ type Jmysql struct {
 	Squema string
 }
 
-func SetVar(Dns string,Root string,Passs string, Squema string) Jmysql {
+func SetVar(Dns string,Root string,Pass string, Squema string) Jmysql {
 	return Jmysql{
-		Dns:    "uatcupomania.c4rjguxjh6uc.us-east-1.rds.amazonaws.com",
-		Root:   "root",
-		Pass:   "xOGDOwsMsAN8mLTUSTLjic7I",
-		Squema: "uatcupomania",
+		Dns:    Dns,
+		Root:   Root,
+		Pass:   Pass,
+		Squema: Squema,
 	}
 }
 
