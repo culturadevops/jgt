@@ -36,7 +36,8 @@ func (j *Jmysql) Dump(folder string, squema string) {
 	if squema != "" {
 		j.Squema = squema
 	}
-	cmd := exec.Command("mysqldump", "--no-data", "-u", j.Root, "-p"+j.Pass, "--set-gtid-purged=OFF", "-h", j.Dns, j.Squema)
+	//"--no-data"
+	cmd := exec.Command("mysqldump", "-u", j.Root, "-p"+j.Pass, "--set-gtid-purged=OFF", "-h", j.Dns, j.Squema)
 	jio.CreateFile(folder+"/"+j.Squema+".sql", exe.Run(cmd, false))
 
 }

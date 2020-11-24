@@ -1,0 +1,4 @@
+github.com/culturadevops/jgt/exe v0.0.0-20201123023022-db906cc3c944 h1:u+r4FPt21L1I0LI2l8fdu0qYcAjPpTBjImhAn0AY/8k=
+github.com/culturadevops/jgt/exe v0.0.0-20201123023022-db906cc3c944/go.mod h1:zqNaDqu6UnO1GBSgPRVNPn8Kv9bdSlxlBBoUTwgXUts=
+github.com/culturadevops/jgt/jio v0.0.0-20201123023022-db906cc3c944 h1:CO1KAqK0Pi68judwOjjc1SyTkqSlU5/g8p8n3nGfCBA=
+github.com/culturadevops/jgt/jio v0.0.0-20201123023022-db906cc3c944/go.mod h1:kJDsttMup3YUicen6033Futd4oiOCyw0V0gXGGLXt7U=
