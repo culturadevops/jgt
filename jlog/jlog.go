@@ -64,7 +64,7 @@ func (i *Jlog) Write(typems string, format string, a ...interface{}) string {
 func (i *Jlog) Debug(format string, a ...interface{}) {
 	if i.IsDebug {
 		texto := i.Write("[DEBUG]:", format, a...)
-		color.Magenta(texto)
+		color.White(texto)
 		if i.PrinterLogs == true {
 			i.LogInfo.Println(texto)
 		}
