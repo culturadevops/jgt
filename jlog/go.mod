@@ -1,4 +1,4 @@
-module culturadevops/jgt/jlog
+module github.com/culturadevops/jgt/jlog
 
 go 1.18
 
