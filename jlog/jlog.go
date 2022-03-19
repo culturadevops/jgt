@@ -70,6 +70,18 @@ func (i *Jlog) Debug(format string, a ...interface{}) {
 		}
 	}
 }
+func (i *Jlog) Fatal(format string, a ...interface{}) {
+	i.Error(format, a)
+	os.Exit(1)
+}
+func (i *Jlog) IsFatal(err error) {
+	if err != nil {
+		i.Error(err.Error(), nil)
+		os.Exit(1)
+	}
+
+}
+
 func (i *Jlog) Error(format string, a ...interface{}) {
 	texto := i.Write("[Error]:", format, a...)
 	if i.PrinterScreen == true {
