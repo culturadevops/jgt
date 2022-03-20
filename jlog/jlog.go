@@ -34,6 +34,11 @@ func PrepareLog(IsDebug bool, PrinterLogs bool, PrinterScreen bool) *Jlog {
 		IsDebug:       IsDebug,
 		PrinterLogs:   PrinterLogs,
 		PrinterScreen: PrinterScreen,
+		LogInfo:       &log.Logger{},
+		LogError:      &log.Logger{},
+		DirLogs:       "logs",
+		DirErroLogs:   "logs/error",
+		LogFileName:   "run",
 	}
 	Log.SetInitProperty()
 	return Log

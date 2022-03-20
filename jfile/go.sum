@@ -1,5 +1,5 @@
-github.com/culturadevops/jgt/jlog v0.0.0-20220319204113-3d284c14c0da h1:8Iu5JKjLpQFFw0D824wm0yx4/O3vMHLPlm8NgvgQd4g=
-github.com/culturadevops/jgt/jlog v0.0.0-20220319204113-3d284c14c0da/go.mod h1:MaH4mlsowFvuqCnRQZKn+yPV2LluZJv+fuYKbMyfLkI=
+github.com/culturadevops/jgt/jlog v0.0.0-20220319220718-cb4992c774ce h1:mC2jD6NESBFLS2Y87BW/kg4C+vJnrPFBlCFdcCkzOJc=
+github.com/culturadevops/jgt/jlog v0.0.0-20220319220718-cb4992c774ce/go.mod h1:MaH4mlsowFvuqCnRQZKn+yPV2LluZJv+fuYKbMyfLkI=
 github.com/fatih/color v1.13.0 h1:8LOYc1KYPPmyKMuN8QV2DNRWNbLo6LZ0iLs8+mlH53w=
 github.com/fatih/color v1.13.0/go.mod h1:kLAiJbzzSOZDVNGyDpeOxJ47H46qBXwg5ILebYFFOfk=
 github.com/mattn/go-colorable v0.1.9 h1:sqDoxXbdeALODt0DAeJCVp38ps9ZogZEAXjus69YV3U=

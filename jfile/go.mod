@@ -1,8 +1,8 @@
-module github.com/culturadevops/jgt/csvinmemory
+module github.com/culturadevops/jgt/jfile
 
 go 1.18
 
-require github.com/culturadevops/jgt/jlog v0.0.0-20220319204113-3d284c14c0da
+require github.com/culturadevops/jgt/jlog v0.0.0-20220319220718-cb4992c774ce
 
 require (
 	github.com/fatih/color v1.13.0 // indirect
