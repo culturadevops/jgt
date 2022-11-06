@@ -334,3 +334,44 @@ func (i *Jfile) GetJsonFileWithStruct(jsonFileName string, WithStruct interface{
 	i.Log.IsFatal(err1)
 	i.Log.IsFatal(json.Unmarshal([]byte(byteValue), WithStruct))
 }
+
+/*
+quita todo lo que este destras de el string que pasemos en PATH
+no olvidar para en el primer encuentro ejemplo
+primer/segundo/archivo.gif
+respuesta :segundo/archivo.gif
+*/
+func RemoveStringsForDir(filename string, path string) string {
+	index := strings.Index(filename, path)
+	leng := len(filename)
+	if index > -1 {
+		return filename[index+1 : leng]
+	}
+	return filename
+}
+
+/*
+esta hecho para remover lo que este al final de una palabra especial para extensiones
+no olvidar parar el punto ejemplo: .git .html
+*/
+func RemoveExtention(filename string, ext string) string {
+	index := strings.Index(filename, ext)
+	if index > -1 {
+		return filename[0:index]
+	}
+	return filename
+}
+
+/*
+quita todo el contenidos detras de "/" que se encuentra en una ruta pasada en filename
+ejemplo:
+ruta/algo/de/mi/archivo.lol
+respuesta: archivo.lol
+*/
+func RemoveALLPathForDir(filename string) string {
+	path := "/"
+	for i := 0; strings.Index(filename, path) > -1; i++ {
+		filename = RemoveStringsForDir(filename, path)
+	}
+	return filename
+}
