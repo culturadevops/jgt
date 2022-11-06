@@ -24,10 +24,8 @@ type Jlog struct {
 	LogFileName   string
 }
 
-func DebufOff(Log *Jlog) {
-	if Log != nil {
-		Log.IsDebug = false
-	}
+func (i *Jlog) DebugOff() {
+	i.IsDebug = false
 }
 func PrepareLog(IsDebug bool, PrinterLogs bool, PrinterScreen bool) *Jlog {
 	Log := &Jlog{

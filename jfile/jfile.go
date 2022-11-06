@@ -2,9 +2,12 @@ package jfile
 
 import (
 	"bufio"
+	"encoding/json"
+	"errors"
 	"io"
 	"io/ioutil"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/culturadevops/jgt/jlog"
@@ -19,8 +22,12 @@ type Jfile struct {
 	Map               map[string]string
 }
 
-/* Agrega datos para usar las variables de folder home y origen
- */
+/*
+Agrega datos para usar las variables de folder home y origen
+estas variables son usadas en las siguientes funciones
+GetTempleteName
+GetDestinationFileName
+*/
 func (i *Jfile) SetOriginData(OrigHomedir string, OrigFolder string) {
 	i.OrigHomedir = OrigHomedir
 	i.OrigFolder = OrigFolder
@@ -33,22 +40,24 @@ func (i *Jfile) SetDestinationData(DestinationDir string, DestinationFolder stri
 	i.DestinationFolder = DestinationFolder
 }
 
-/* genera una ruta de una plantilla usando origin home y origin folder  de Jfile
- */
+/*
+Genera una ruta de una plantilla usando origin home y origin folder  de Jfile
+*/
 func (i *Jfile) GetOriginFile(OriginFileName string) string {
 	return i.GetTempleteName(i.OrigFolder, OriginFileName)
 }
 
-/* genera ruta de destino usando destinohome y destion folder de el objeto jfile
- */
-func (i *Jfile) GetDestinationFile(filesVersionName string) string {
-	return i.GetTempleteName(i.DestinationFolder, filesVersionName)
+/*
+Genera ruta de destino usando destinohome y destion folder de el objeto jfile
+*/
+func (i *Jfile) GetDestinationFile(FilesVersionName string) string {
+	return i.GetTempleteName(i.DestinationFolder, FilesVersionName)
 }
 
 /*
  */
-func (i *Jfile) GetDestinationFileName(origFolderName string, filesVersionName string) string {
-	finaldir := i.DestinationDir + "/" + origFolderName + "/" + filesVersionName
+func (i *Jfile) GetDestinationFileName(OriginFolderName string, FilesVersionName string) string {
+	finaldir := i.DestinationDir + "/" + OriginFolderName + "/" + FilesVersionName
 	i.Log.Debug("DestinationDir", finaldir)
 	if !i.FileExist(finaldir) {
 		i.Log.Warn("file no exist", finaldir)
@@ -58,8 +67,8 @@ func (i *Jfile) GetDestinationFileName(origFolderName string, filesVersionName s
 
 /*
  */
-func (i *Jfile) GetTempleteName(origFolderName string, filesVersionName string) string {
-	finaldir := i.OrigHomedir + "/" + origFolderName + "/" + filesVersionName
+func (i *Jfile) GetTempleteName(OriginFolderName string, FilesVersionName string) string {
+	finaldir := i.OrigHomedir + "/" + OriginFolderName + "/" + FilesVersionName
 	i.Log.Debug("GetTempleteName", finaldir)
 	if !i.FileExist(finaldir) {
 		i.Log.Warn("file no exist", finaldir)
@@ -68,15 +77,18 @@ func (i *Jfile) GetTempleteName(origFolderName string, filesVersionName string) 
 }
 
 /*
- */
-func (i *Jfile) DebufOff() {
+	Desactiva el debug
+*/
+func (i *Jfile) LogDebugOff() {
 	if i.Log != nil {
-		i.Log.IsDebug = false
+		i.Log.Debug("Debug off")
+		i.Log.DebugOff()
 	}
 }
 
 /*
- */
+	Configura por defecto de log
+*/
 func (i *Jfile) PrepareDefaultLog() {
 	i.Log = jlog.PrepareLog(true, true, true)
 }
@@ -96,64 +108,80 @@ func (i *Jfile) FileExist(dir string) bool {
 }
 
 /*
- */
-func (i *Jfile) CreateFolderOrDie(directorio string) {
-	i.CreateFolder(directorio, true)
+ Crea un Folder y sino puede para el proceso
+*/
+func (i *Jfile) CreateFolderOrDie(Dir string) {
+	i.CreateFolder(Dir, true)
 }
 
 /*
- */
-func (i *Jfile) CreateFolderAndContinue(directorio string) {
-	i.CreateFolder(directorio, false)
+Crea un folder y sino puede no importa
+*/
+func (i *Jfile) CreateFolderAndContinue(Dir string) {
+	i.CreateFolder(Dir, false)
 }
 
 /*
- */
-func (i *Jfile) CreateFolder(directorio string, die bool) {
-	i.Log.Debug("Inicio Creando archivo", directorio)
-	if !i.FileExist(directorio) {
-		err := os.Mkdir(directorio, 0755)
-		i.Log.Error(err.Error(), directorio)
+	Crear folder con parametro "die"
+	esta funcion se usa en CreateFolderAndContinue y CreateFolderOrDie
+*/
+func (i *Jfile) CreateFolder(Dir string, die bool) {
+	i.Log.Debug("Creating folder...", Dir)
+	var err error
+	if i.FileExist(Dir) {
+		err = errors.New("This folder exist:" + Dir)
+	} else {
+		err = os.Mkdir(Dir, 0755)
+	}
+	if err == nil {
+		i.Log.Debug("Folder ready:", Dir)
+	} else {
+		i.Log.Error(err.Error(), Dir)
 		if die {
 			i.Log.IsFatal(err)
 		}
 	}
+
 }
 
-/* crea una ruta completa de directorio ejemplo
+/* crea una ruta completa de Dir ejemplo
 /ruta1/ruta2/ruta3
 si no existe crea todo
 */
-func (i *Jfile) CreateDirAll(directorio string) {
-	if !i.FileExist(directorio) {
-		i.Log.IsFatal(os.MkdirAll(directorio, 0755))
+func (i *Jfile) CreateDirAll(Dir string) {
+	if !i.FileExist(Dir) {
+		i.Log.IsFatal(os.MkdirAll(Dir, 0755))
+	} else {
+		err := errors.New("this folder exist:" + Dir)
+		i.Log.Error(err.Error(), Dir)
 	}
+
 }
 
 /* Crea un archivo y le agrega data
  */
-func (i *Jfile) CreateFile(rutaDestino string, data string) {
-	i.Log.Debug("Inicio Creando archivo", rutaDestino)
-	i.Log.IsFatal(ioutil.WriteFile(rutaDestino, []byte(data), 0644))
+func (i *Jfile) CreateFile(DestinationDir string, Data string) {
+	i.Log.Debug("Creating file...", DestinationDir)
+	i.Log.IsFatal(ioutil.WriteFile(DestinationDir, []byte(Data), 0644))
 }
 
 /* lee un archivo y retorna un string de lo leido
  */
-func (i *Jfile) ReadFile(templateName string) string {
-	i.Log.Debug("Inicio lectura de archivo", templateName)
-	data, err := ioutil.ReadFile(templateName)
+func (i *Jfile) ReadFile(TemplateName string) string {
+	i.Log.Debug("Reading file...", TemplateName)
+	data, err := ioutil.ReadFile(TemplateName)
 	i.Log.IsFatal(err)
 	return string(data)
 }
 
 /* Copia un archivo usando operaciones del sistema
  */
-func (i *Jfile) Copy(srcFileDir string, destFileDir string) {
+func (i *Jfile) Copy(srcFileDir string, DestFileDir string) {
 	srcFile, err := os.Open(srcFileDir)
 	i.Log.IsFatal(err)
 	defer srcFile.Close()
 
-	destFile, err := os.Create(destFileDir) // creates if file doesn't exist
+	destFile, err := os.Create(DestFileDir) // creates if file doesn't exist
 	i.Log.IsFatal(err)
 	defer destFile.Close()
 
@@ -166,21 +194,21 @@ func (i *Jfile) Copy(srcFileDir string, destFileDir string) {
 
 /* lee un archivo y luego lo copia a otro
  */
-func (i *Jfile) ReadAndCopy(srcFileDir string, destFileDir string) {
+func (i *Jfile) ReadAndCopy(srcFileDir string, DestFileDir string) {
 	b, err := ioutil.ReadFile(srcFileDir)
 	i.Log.IsFatal(err)
-	err = ioutil.WriteFile(destFileDir, b, 0644)
+	err = ioutil.WriteFile(DestFileDir, b, 0644)
 	i.Log.IsFatal(err)
 }
 
-/* modifica un archivo buscando algo
+/* Remplaza terminos en un archivo con data, los terminos a remplazar estan en el MapForReplace
  */
-func (i *Jfile) UpdateFile(templateName string, MapForReplace map[string]string) {
-	data := i.ReplaceTextInFile(templateName, MapForReplace)
-	i.CreateFile(templateName, data)
+func (i *Jfile) UpdateFile(TemplateName string, MapForReplace map[string]string) {
+	data := i.ReplaceTextInFile(TemplateName, MapForReplace)
+	i.CreateFile(TemplateName, data)
 }
 
-/*
+/* Remplaza terminos en un archivo con data, los terminos a remplazar estan en el i.Map
  */
 func (i *Jfile) UpdateFileWithInternalData(DestinationFileName string) {
 	data := i.ReplaceTextInFile(DestinationFileName, i.Map)
@@ -189,21 +217,28 @@ func (i *Jfile) UpdateFileWithInternalData(DestinationFileName string) {
 
 /* Crea un archivo nuevo partiendo de un una plantilla y un arreglo de opciones a remplazar
  */
-func (i *Jfile) NewFileforTemplate(newName string, templateName string, MapForReplace map[string]string) {
-	data := i.ReplaceTextInFile(templateName, MapForReplace)
-	i.CreateFile(newName, data)
+func (i *Jfile) NewFileforTemplate(NewName string, TemplateName string, MapForReplace map[string]string) {
+	data := i.ReplaceTextInFile(TemplateName, MapForReplace)
+	i.CreateFile(NewName, data)
+}
+
+/* Crea un archivo nuevo partiendo de un una plantilla y un arreglo de opciones a remplazar en el i.Map
+ */
+func (i *Jfile) NewFileForTemplateWithInternalData(NewName string, TemplateName string) {
+	data := i.ReplaceTextInFile(TemplateName, i.Map)
+	i.CreateFile(NewName, data)
 }
 
 /*
  */
-func (i *Jfile) CopyTemplate(origFolderName string, filesVersionName string, destFileName string) {
-	i.Copy(i.GetTempleteName(origFolderName, filesVersionName), destFileName)
+func (i *Jfile) CopyTemplate(OriginFolderName string, FilesVersionName string, destFileName string) {
+	i.Copy(i.GetTempleteName(OriginFolderName, FilesVersionName), destFileName)
 }
 
-/* remplaza info en un archivo luego lo pasa a una variable
+/* lee un file y remplaza info en el luego lo retorna (no remplaza el archivo los cambios lo pone en memoria)
  */
-func (i *Jfile) ReplaceTextInFile(templateName string, MapForReplace map[string]string) string {
-	input := i.ReadFile(templateName)
+func (i *Jfile) ReplaceTextInFile(TemplateName string, MapForReplace map[string]string) string {
+	input := i.ReadFile(TemplateName)
 	for key, value := range MapForReplace {
 		input = strings.Replace(input, key, value, -1)
 	}
@@ -212,8 +247,8 @@ func (i *Jfile) ReplaceTextInFile(templateName string, MapForReplace map[string]
 
 /*añade al final del archivo un string
  */
-func (i *Jfile) AppEndToFile(destFileDir string, data string) {
-	b, err := os.OpenFile(destFileDir, os.O_APPEND|os.O_WRONLY, 0600)
+func (i *Jfile) AppEndToFile(DestFileDir string, data string) {
+	b, err := os.OpenFile(DestFileDir, os.O_APPEND|os.O_WRONLY, 0600)
 	i.Log.IsFatal(err)
 	defer b.Close()
 	_, err = b.WriteString(data)
@@ -221,9 +256,10 @@ func (i *Jfile) AppEndToFile(destFileDir string, data string) {
 }
 
 /*
- */
-func (i *Jfile) AppEndArrayToFile(destFileDir string, datas []string) {
-	b, err := os.OpenFile(destFileDir, os.O_APPEND|os.O_WRONLY, 0600)
+agrega al final de un archivo varios string
+*/
+func (i *Jfile) AppEndArrayToFile(DestFileDir string, datas []string) {
+	b, err := os.OpenFile(DestFileDir, os.O_APPEND|os.O_WRONLY, 0600)
 	i.Log.IsFatal(err)
 	defer b.Close()
 	for _, data := range datas {
@@ -233,7 +269,8 @@ func (i *Jfile) AppEndArrayToFile(destFileDir string, datas []string) {
 }
 
 /*
- */
+usa el i.Map y va agregando data en el
+*/
 func (i *Jfile) AddMap(index string, value string) {
 	if i.Map == nil {
 		i.Map = make(map[string]string)
@@ -242,14 +279,15 @@ func (i *Jfile) AddMap(index string, value string) {
 }
 
 /*
- */
+agrega un valor a un archivo remplazando lo que consiga en "index" por el valor de "value"
+*/
 func (i *Jfile) AddValueToFile(index string, value string, Destinationfile string) {
 	MapForReplace := make(map[string]string)
 	MapForReplace[index] = value
 	i.UpdateFile(Destinationfile, MapForReplace)
 }
 
-/*
+/* lee un archivo y pone su contenido en una linea usando el separador
  */
 func (i *Jfile) ReadFileAndPutInLine(filePath string, separator string) string {
 
@@ -265,4 +303,34 @@ func (i *Jfile) ReadFileAndPutInLine(filePath string, separator string) string {
 	}
 	readFile.Close()
 	return fileLines
+}
+
+/*
+	Add content to file if not exist match string
+*/
+func (i *Jfile) AddContentIfNotExist(DestineName string, MatchString string, ContentToAdd string) bool {
+	word := i.ReadFile(DestineName)
+	existe, _ := regexp.MatchString(MatchString, word)
+	if !existe {
+		i.AppEndToFile(DestineName, ContentToAdd)
+	}
+	return existe
+}
+
+/*
+lee un archivo buscando una estructura y la devuelve
+para usar debes hacer esto
+type FilesStruct struct {
+	Name  string
+}
+var WithStruct []FilesStruct
+GetJsonFileWithStruct("miarchivo.json", &WithStruct)
+*/
+func (i *Jfile) GetJsonFileWithStruct(jsonFileName string, WithStruct interface{}) {
+	jsonFile, err := os.Open(jsonFileName)
+	i.Log.IsFatal(err)
+	defer jsonFile.Close()
+	byteValue, err1 := ioutil.ReadAll(jsonFile)
+	i.Log.IsFatal(err1)
+	i.Log.IsFatal(json.Unmarshal([]byte(byteValue), WithStruct))
 }
