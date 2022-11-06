@@ -85,11 +85,19 @@ func (i *Jfile) LogDebugOff() {
 		i.Log.DebugOff()
 	}
 }
+func (i *Jfile) ConfigureInitLog(IsDebug bool, PrinterLogs bool, PrinterScreen bool) {
+	i.Log = jlog.PrepareLog(IsDebug, PrinterLogs, PrinterScreen)
+}
+func (i *Jfile) ChangeConfigureLog(IsDebug bool, PrinterLogs bool, PrinterScreen bool) {
+	i.Log.IsDebug = IsDebug
+	i.Log.PrinterLogs = PrinterLogs
+	i.Log.PrinterScreen = PrinterScreen
+}
 
 /*
 	Configura por defecto de log
 */
-func (i *Jfile) PrepareDefaultLog() {
+func (i *Jfile) PrepareInitDefaultLog() {
 	i.Log = jlog.PrepareLog(true, true, true)
 }
 

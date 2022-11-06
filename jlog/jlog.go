@@ -97,10 +97,16 @@ func (i *Jlog) Fatal(format string, a ...interface{}) {
 }
 func (i *Jlog) IsFatal(err error) {
 	if err != nil {
-		i.Error(err.Error(), nil)
-		os.Exit(1)
+		i.Fatal(err.Error(), nil)
 	}
-
+}
+func (i *Jlog) IsErrorAndDie(err error, die bool) {
+	if die {
+		i.IsFatal(err)
+	}
+	if err != nil {
+		i.Error(err.Error())
+	}
 }
 
 func (i *Jlog) Error(format string, a ...interface{}) {
