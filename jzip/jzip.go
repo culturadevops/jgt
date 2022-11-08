@@ -1,4 +1,4 @@
-package Jzip
+package jzip
 
 import (
 	"path/filepath"
