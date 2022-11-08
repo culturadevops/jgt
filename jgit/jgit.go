@@ -1,7 +1,6 @@
 package jgit
 
 import (
-	"os/exec"
 	"path/filepath"
 
 	"github.com/culturadevops/jgt/exe"
@@ -11,17 +10,23 @@ type Jgit struct {
 	RepoName  string
 	FinalPath string
 	Branch    string
+	Die       bool
+	Jexe      *exe.Jexe
 }
 
-func (g *Jgit) Command(arg ...string) {
+func (g *Jgit) PrepareInit() {
+	g.Jexe = new(exe.Jexe)
+	g.Jexe.PrepareDefaultjExe("git")
 
-	cmd := exec.Command("git", arg...)
+}
+func (g *Jgit) Command(arg ...string) {
+	g.Jexe.Arg = arg
+	g.Jexe.CommandInternal(true)
 	if g.FinalPath != "" {
 		absPath, _ := filepath.Abs(g.FinalPath)
-		cmd.Dir = absPath
-		println(absPath)
+		g.Jexe.Cmd.Dir = absPath
 	}
-	exe.Run(cmd, true)
+	g.Jexe.Run(g.Die)
 }
 func (g *Jgit) CloneB(RepoName string, FinalPath string) {
 	if FinalPath != "" {
