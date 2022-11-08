@@ -22,6 +22,7 @@ type Jlog struct {
 	DirLogs       string //os.Mkdir("logs", 0755)
 	DirErroLogs   string //os.Mkdir("logs/error", 0755)
 	LogFileName   string
+	Trace         bool
 }
 
 func (i *Jlog) DebugOff() {
@@ -37,6 +38,7 @@ func PrepareLog(IsDebug bool, PrinterLogs bool, PrinterScreen bool) *Jlog {
 		DirLogs:       "logs",
 		DirErroLogs:   "logs/error",
 		LogFileName:   "run",
+		Trace:         false,
 	}
 	Log.SetInitProperty()
 	return Log
@@ -56,26 +58,48 @@ func (i *Jlog) Write(typems string, format string, a ...interface{}) string {
 	var file, infofile string
 	var line, actualline int
 	var debuging, text string
+
 	for in := 0; ok == true; in++ {
 		_, file, actualline, ok = runtime.Caller(in)
-		proctemp := splitLast(file)
-		if proctemp == "proc.go" {
-			break
-		}
-		infofile = proctemp
-		debuging = debuging + " (" + proctemp + ":" + strconv.Itoa(actualline) + ")"
+		if i.Trace {
+			proctemp := splitLast(file)
 
-		line = actualline
-		if i.IsDebug == true {
-			infofile = debuging
+			if proctemp == "proc.go" {
+				break
+			}
+			if proctemp != "jlog.go" {
+				infofile = proctemp
+				debuging = debuging + " (" + proctemp + ":" + strconv.Itoa(actualline) + ")"
+			}
+
+			line = actualline
+			if i.IsDebug == true {
+				infofile = debuging
+			}
+		} else {
+			_, _, _, ok = runtime.Caller(in + 1)
+			if ok == false {
+				_, file, actualline, ok = runtime.Caller(in - 3)
+				proctemp := splitLast(file)
+				if proctemp == "proc.go" {
+					break
+				}
+				infofile = proctemp
+				debuging = debuging + " (" + proctemp + ":" + strconv.Itoa(actualline) + ")"
+				line = actualline
+				if i.IsDebug == true {
+					infofile = debuging
+				}
+			}
 		}
 	}
 
-	info := fmt.Sprintf(format+"-", a...)
+	info := fmt.Sprintf(format, a...)
+
 	if i.IsDebug == true {
-		text = fmt.Sprintf("%s: %v", infofile, info)
+		text = fmt.Sprintf("%s: %s", infofile, info)
 	} else {
-		text = fmt.Sprintf("%s:%d: %v", infofile, line, info)
+		text = fmt.Sprintf("%s:%d: %s", infofile, line, info)
 	}
 
 	//fmt.Println(typems, text)

@@ -58,6 +58,7 @@ func (i *Jexe) PrepareDefaultjExe(Executable string) {
 	i.PrinterLogs = true
 	i.PrinterScreen = true
 	i.PrepareDefaultLog()
+
 }
 func (i *Jexe) PreparejExe(Executable string, ShowStd bool, ShowErr bool, IsDebug bool, PrinterLogs bool, PrinterScreen bool) {
 	i.Executable = Executable
@@ -72,14 +73,17 @@ func (i *Jexe) CommandAndRun(withArgument bool, die bool) {
 	i.Command(i.Executable, withArgument)
 	i.Run(die)
 }
+func (i *Jexe) CommandInternal(withArgument bool) {
+	i.Command(i.Executable, withArgument)
+}
+
 func (i *Jexe) Command(exectuble string, withArgument bool) {
 	if withArgument {
-		i.Log.Debug("se crea comando con argumento ", exectuble)
 		i.Cmd = exec.Command(exectuble, i.Arg...)
 	} else {
-		i.Log.Debug("se crea comando sin argumento", exectuble)
 		i.Cmd = exec.Command(exectuble)
 	}
+	i.Log.Debug("Commando:\n%s\n", i.Cmd)
 }
 func (i *Jexe) Run(die bool) (string, string, error) {
 	var stdout, stderr bytes.Buffer
@@ -88,10 +92,9 @@ func (i *Jexe) Run(die bool) (string, string, error) {
 	err := i.Cmd.Run()
 	outStr, errStr := string(stdout.Bytes()), string(stderr.Bytes())
 	if i.ShowStd {
-		i.Log.Debug("exe output: ", outStr)
-	}
-	if i.ShowErr && errStr != "" {
-		i.Log.Debug("exe output: ", errStr)
+		if outStr != "" {
+			i.Log.Debug("exe output: \n%s\n", outStr)
+		}
 	}
 	if errStr != "" {
 		i.Log.IsErrorAndDie(errors.New(errStr), die)
