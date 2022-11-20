@@ -25,6 +25,11 @@ type Jlog struct {
 	Trace         bool
 }
 
+func (i *Jlog) Silence() {
+	i.IsDebug = false
+	i.PrinterLogs = false
+	i.PrinterScreen = false
+}
 func (i *Jlog) DebugOff() {
 	i.IsDebug = false
 }

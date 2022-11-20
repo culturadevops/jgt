@@ -98,7 +98,10 @@ func (i *Jfile) ChangeConfigureLog(IsDebug bool, PrinterLogs bool, PrinterScreen
 	Configura por defecto de log
 */
 func (i *Jfile) PrepareInitDefaultLog() {
-	i.Log = jlog.PrepareLog(true, true, true)
+	jlog.PrepareLog(true, true, true)
+}
+func (i *Jfile) PrepareInitLogSilence() {
+	jlog.PrepareLog(false, false, false)
 }
 
 /*
@@ -349,7 +352,7 @@ no olvidar para en el primer encuentro ejemplo
 primer/segundo/archivo.gif
 respuesta :segundo/archivo.gif
 */
-func RemoveStringsForDir(filename string, path string) string {
+func (i *Jfile) RemoveStringsForDir(filename string, path string) string {
 	index := strings.Index(filename, path)
 	leng := len(filename)
 	if index > -1 {
@@ -362,12 +365,15 @@ func RemoveStringsForDir(filename string, path string) string {
 esta hecho para remover lo que este al final de una palabra especial para extensiones
 no olvidar parar el punto ejemplo: .git .html
 */
-func RemoveExtention(filename string, ext string) string {
+func (i *Jfile) RemoveExtention(filename string, ext string) string {
 	index := strings.Index(filename, ext)
 	if index > -1 {
 		return filename[0:index]
 	}
 	return filename
+}
+func (i *Jfile) GetOnlyFileName(filename string, ext string) string {
+	return i.RemoveExtention(i.RemoveALLPathForDir(filename), ext)
 }
 
 /*
@@ -376,10 +382,10 @@ ejemplo:
 ruta/algo/de/mi/archivo.lol
 respuesta: archivo.lol
 */
-func RemoveALLPathForDir(filename string) string {
+func (j *Jfile) RemoveALLPathForDir(filename string) string {
 	path := "/"
 	for i := 0; strings.Index(filename, path) > -1; i++ {
-		filename = RemoveStringsForDir(filename, path)
+		filename = j.RemoveStringsForDir(filename, path)
 	}
 	return filename
 }

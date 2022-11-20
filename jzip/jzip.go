@@ -1,33 +1,26 @@
 package jzip
 
 import (
-	"path/filepath"
-
 	"github.com/culturadevops/jgt/exe"
+	"github.com/culturadevops/jgt/jlog"
 )
 
 type Jzip struct {
-	RepoName  string
-	FinalPath string
-	Branch    string
-	Die       bool
-	Jexe      *exe.Jexe
+	Jexe *exe.Jexe
 }
 
 func (g *Jzip) PrepareInit() {
 	g.Jexe = new(exe.Jexe)
 	g.Jexe.PrepareDefaultjExe("zip")
-
 }
-func (g *Jzip) Command(arg ...string) {
-	g.Jexe.Arg = arg
-	g.Jexe.CommandInternal(true)
-	if g.FinalPath != "" {
-		absPath, _ := filepath.Abs(g.FinalPath)
-		g.Jexe.Cmd.Dir = absPath
-	}
-	g.Jexe.Run(g.Die)
+func (i *Jzip) ConfigureInitLog(IsDebug bool, PrinterLogs bool, PrinterScreen bool) {
+	i.Jexe.Log = jlog.PrepareLog(IsDebug, PrinterLogs, PrinterScreen)
 }
-func (g *Jzip) ZipFolder(NameZip string, FolderZip string) {
-	g.Command("-r", NameZip, FolderZip)
+func (g *Jzip) PrepareInSilence() {
+	g.Jexe = new(exe.Jexe)
+	g.Jexe.PrepareDefaultWithLogSilence("zip")
+}
+func (g *Jzip) ZipFolder(NameZip string, FolderZip string, Die bool) {
+	g.Jexe.Die = Die
+	g.Jexe.ExecuteWithArg("-r", NameZip, FolderZip)
 }

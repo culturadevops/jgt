@@ -19,6 +19,9 @@ type Jexe struct {
 	PrinterScreen bool
 	ShowStd       bool
 	ShowErr       bool
+	/**/
+	FinalPath string
+	Die       bool
 }
 
 /*
@@ -31,43 +34,44 @@ func (i *Jexe) LogDebugOff() {
 		i.Log.Debug("Debug off")
 	}
 }
+func (i *Jexe) LogSilence() {
+	if i.Log != nil {
+		i.Log.Silence()
+	}
+}
 
 /*
 	Configura por defecto de log
 */
 func (i *Jexe) PrepareDefaultLog() {
-	i.IsDebug = true
-	i.PrinterLogs = true
-	i.PrinterScreen = true
-	i.Log = jlog.PrepareLog(i.IsDebug, i.PrinterLogs, i.PrinterScreen)
+	i.PrepareLog(true, true, true)
 }
-func (i *Jexe) ConfigureLog(IsDebug bool, PrinterLogs bool, PrinterScreen bool) {
+func (i *Jexe) PrepareLog(IsDebug bool, PrinterLogs bool, PrinterScreen bool) {
 	i.IsDebug = IsDebug
 	i.PrinterLogs = PrinterLogs
 	i.PrinterScreen = PrinterScreen
 	i.Log = jlog.PrepareLog(i.IsDebug, i.PrinterLogs, i.PrinterScreen)
 }
-func (i *Jexe) PrepareLog() {
-	i.Log = jlog.PrepareLog(i.IsDebug, i.PrinterLogs, i.PrinterScreen)
-}
+
 func (i *Jexe) PrepareDefaultjExe(Executable string) {
 	i.Executable = Executable
 	i.ShowStd = true
 	i.ShowErr = true
-	i.IsDebug = true
-	i.PrinterLogs = true
-	i.PrinterScreen = true
 	i.PrepareDefaultLog()
+
+}
+func (i *Jexe) PrepareDefaultWithLogSilence(Executable string) {
+	i.Executable = Executable
+	i.ShowStd = false
+	i.ShowErr = false
+	i.PrepareLog(false, false, false)
 
 }
 func (i *Jexe) PreparejExe(Executable string, ShowStd bool, ShowErr bool, IsDebug bool, PrinterLogs bool, PrinterScreen bool) {
 	i.Executable = Executable
 	i.ShowStd = ShowStd
 	i.ShowErr = ShowErr
-	i.IsDebug = IsDebug
-	i.PrinterLogs = PrinterLogs
-	i.PrinterScreen = PrinterScreen
-	i.PrepareLog()
+	i.PrepareLog(IsDebug, PrinterLogs, PrinterScreen)
 }
 func (i *Jexe) CommandAndRun(withArgument bool, die bool) {
 	i.Command(i.Executable, withArgument)
@@ -83,8 +87,23 @@ func (i *Jexe) Command(exectuble string, withArgument bool) {
 	} else {
 		i.Cmd = exec.Command(exectuble)
 	}
+	if i.FinalPath != "" {
+		absPath, _ := filepath.Abs(i.FinalPath)
+		i.Cmd.Dir = absPath
+	}
 	i.Log.Debug("Commando:\n%s\n", i.Cmd)
 }
+func (i *Jexe) ExecuteWithArg(arg ...string) {
+	i.Arg = arg
+	i.CommandInternal(true)
+	i.Run(i.Die)
+}
+func (i *Jexe) ExecuteWithArgAndData(data string, arg ...string) {
+	i.Arg = arg
+	i.CommandInternal(true)
+	i.RunWithData(data, i.Die)
+}
+
 func (i *Jexe) Run(die bool) (string, string, error) {
 	var stdout, stderr bytes.Buffer
 	i.Cmd.Stdout = &stdout
@@ -121,7 +140,7 @@ func (i *Jexe) Addflag(flag string) []string {
 	i.Arg = append([]string{flag}, i.Arg...)
 	return i.Arg
 }
-func (i *Jexe) RunWithData(data string, flagStdOut bool, die bool) (string, string, error) {
+func (i *Jexe) RunWithData(data string, die bool) (string, string, error) {
 	buffer := bytes.Buffer{}
 	buffer.Write([]byte(data))
 	i.Cmd.Stdin = &buffer
